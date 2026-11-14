@@ -1,5 +1,6 @@
 
 import { NavLink } from "react-router-dom";
+import { Code2 } from "lucide-react";
 import {
   BookOpen,
   Home,
@@ -40,6 +41,11 @@ const navigation = [
     label: "Error to Docs",
     path: "/error-to-docs",
     icon: Bug,
+  },
+  {
+  label: "Code Playground",
+  path: "/playground",
+  icon: Code2,
   },
 ];
 

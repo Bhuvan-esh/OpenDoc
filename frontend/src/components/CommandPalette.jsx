@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Home,
   BookOpen,
+  Code2,
   Mic,
   BookText,
   FolderOpen,
@@ -83,6 +84,15 @@ const commands = [
     path: "/error-to-docs",
     keywords: "error bug debugging troubleshooting",
     icon: Bug,
+  },
+  {
+    id: "playground",
+    label: "Open Code Playground",
+    description: "Write and run HTML, CSS and JavaScript",
+    category: "Developer Tools",
+    path: "/playground",
+    keywords: "code editor html css javascript playground",
+    icon: Code2,
   },
 ];
 
