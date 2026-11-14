@@ -1,55 +1,26 @@
 
 import { useMemo, useState } from "react";
 import { BookText, Search, Volume2 } from "lucide-react";
-
-const glossary = [
-  {
-    term: "API",
-    category: "Development",
-    explanation:
-      "A way for two software applications to communicate with each other.",
-  },
-  {
-    term: "Framework",
-    category: "Development",
-    explanation:
-      "A reusable structure that helps developers build applications.",
-  },
-  {
-    term: "Repository",
-    category: "Git",
-    explanation:
-      "A location where project files and their version history are stored.",
-  },
-  {
-    term: "Dependency",
-    category: "Development",
-    explanation:
-      "An external library or package required by a software project.",
-  },
-  {
-    term: "Endpoint",
-    category: "API",
-    explanation:
-      "A specific URL where an API receives requests.",
-  },
-  {
-    term: "Deployment",
-    category: "DevOps",
-    explanation:
-      "The process of making an application available for users.",
-  },
-];
+import { mockGlossary } from "../data/mockGlossary";
 
 export default function Glossary() {
   const [search, setSearch] = useState("");
 
   const filteredTerms = useMemo(() => {
-    return glossary.filter((item) =>
-      `${item.term} ${item.explanation} ${item.category}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    );
+    const queryTerms = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
+
+    if (!queryTerms.length) return mockGlossary;
+
+    return mockGlossary.filter((item) => {
+      const searchableText = [
+        item.term,
+        item.explanation,
+        item.category,
+        ...(item.keywords || []),
+      ].join(" ").toLowerCase();
+
+      return queryTerms.every((queryTerm) => searchableText.includes(queryTerm));
+    });
   }, [search]);
 
   const speak = (text) => {
@@ -72,7 +43,8 @@ export default function Glossary() {
         <Search size={19} />
 
         <input
-          placeholder="Search technical terms..."
+          aria-label="Search technical terms, definitions, and keywords"
+          placeholder="Search terms, definitions, or keywords..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />

@@ -13,6 +13,7 @@ import {
   Terminal,
   ShieldAlert,
 } from "lucide-react";
+import { createGeneralErrorGuide } from "../services/errorDiagnosisService";
 import "../style/error-to-docs.css";
 
 const errorExamples = [
@@ -230,38 +231,7 @@ function diagnoseError(message) {
 
   if (match) return match;
 
-  return {
-    title: "General Error Investigation",
-    category: "Unclassified · Troubleshooting",
-    severity: "Needs investigation",
-    summary:
-      "The supplied error does not match one of the currently supported demo patterns. You can still use the investigation steps below to narrow down the cause.",
-    cause:
-      "The exact cause cannot be determined from this message by the local demo rules. More context, such as the stack trace, affected file, and recent code changes, may be needed.",
-    steps: [
-      "Read the complete error message, including the first line and stack trace.",
-      "Identify the file name and line number where the error occurs.",
-      "Check the code immediately before the reported line.",
-      "Review recent changes to dependencies, configuration, and environment variables.",
-      "Reproduce the issue with the smallest possible example.",
-    ],
-    checks: [
-      "What action triggers the error?",
-      "Does the error happen every time or only sometimes?",
-      "Did you recently change code, dependencies, or configuration?",
-    ],
-    code: null,
-    docs: [
-      {
-        label: "MDN Web Docs",
-        url: "https://developer.mozilla.org/",
-      },
-      {
-        label: "Stack Overflow",
-        url: "https://stackoverflow.com/",
-      },
-    ],
-  };
+  return createGeneralErrorGuide(message);
 }
 
 export default function ErrorToDocs() {
@@ -483,8 +453,8 @@ export default function ErrorToDocs() {
 
           <div className="error-demo-note">
             <AlertCircle size={16} />
-            This is a rule-based frontend demo, not an AI diagnosis.
-            Verify suggested changes before applying them.
+            Common error patterns get focused guidance; other messages get general triage.
+            This local demo is not AI and cannot confirm the exact cause without project context.
           </div>
         </section>
       )}

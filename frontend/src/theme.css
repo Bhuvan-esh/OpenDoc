@@ -135,7 +135,7 @@ pre,
 .sidebar-brand {
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: 23px;
+  font-size: 24px;
   font-weight: 500;
   letter-spacing: -0.5px;
 }
@@ -143,6 +143,17 @@ pre,
 .sidebar-brand b {
   color: var(--accent);
   font-weight: 600;
+}
+
+.sidebar-brand .brand-icon {
+  display: flex;
+  flex: 0 0 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--accent);
 }
 
 .brand-icon {
@@ -1708,5 +1719,127 @@ a:hover {
 
   .category-label {
     margin-bottom: 10px;
+  }
+}
+
+/* Shared page spacing */
+.content-area {
+  padding: clamp(12px, 1.5vw, 22px);
+}
+
+.page {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.glossary-page,
+.assistant-page,
+.workspace-page,
+.bilingual-reader,
+.error-page,
+.code-explanation-page {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.glossary-page,
+.assistant-page {
+  padding: 0 0 20px;
+}
+
+.glossary-page {
+  max-width: 1400px;
+}
+
+.assistant-page,
+.error-page {
+  max-width: 1400px;
+}
+
+.workspace-page,
+.error-page {
+  padding: 0 0 20px;
+}
+
+.bilingual-reader {
+  min-height: 0;
+  padding: 0 0 20px;
+}
+
+.code-explanation-page {
+  max-width: none;
+}
+
+.page-title {
+  margin: 0 0 18px;
+}
+
+.home-page .hero-section {
+  padding: 24px 10px 32px;
+}
+
+.home-page .features-section {
+  margin-top: 32px;
+}
+
+.home-page .page-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+}
+
+.assistant-page-heading {
+  margin-bottom: 20px;
+}
+
+.workspace-heading {
+  margin-bottom: 18px;
+}
+
+.workspace-stats {
+  margin-bottom: 18px;
+}
+
+.reader-header,
+.error-hero {
+  margin-bottom: 18px;
+}
+
+.code-explanation-page-heading {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 760px) {
+  .content-area {
+    padding: 12px;
+  }
+
+  .home-page .hero-section {
+    padding: 18px 4px 24px;
+  }
+
+  .home-page .features-section {
+    margin-top: 24px;
+  }
+
+  .home-page .page-footer {
+    margin-top: 18px;
+  }
+
+  .page-title {
+    margin-bottom: 14px;
+  }
+
+  .assistant-page-heading,
+  .workspace-heading,
+  .reader-header,
+  .error-hero,
+  .code-explanation-page-heading,
+  .playground-heading {
+    margin-bottom: 14px;
+  }
+
+  .workspace-stats {
+    margin-bottom: 14px;
   }
 }

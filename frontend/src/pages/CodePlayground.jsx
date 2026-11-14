@@ -1,5 +1,6 @@
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Code2,
   Play,
@@ -13,6 +14,7 @@ import {
   Braces,
   Trash2,
   LoaderCircle,
+  Lightbulb,
 } from "lucide-react";
 
 import "../style/code-playground.css";
@@ -140,11 +142,14 @@ const languageOptions = [
   { value: "python", label: "Python" },
 ];
 
+
 const judge0LanguageIds = {
-  c: 50,
-  cpp: 54,
-  java: 62,
+  c: 103,      // C (GCC 14.1.0)
+  cpp: 105,    // C++ (GCC 14.1.0)
+  java: 91,    // Java (JDK 17.0.6)
 };
+
+const MAX_CODE_LENGTH = 1_000_000;
 
 let pyodidePromise = null;
 
@@ -258,6 +263,8 @@ function createPreview(html, css, js) {
 }
 
 export default function CodePlayground() {
+  console.log("Judge0 URL:", import.meta.env.VITE_JUDGE0_API_URL);
+  const navigate = useNavigate();
   const [codes, setCodes] = useState(starters);
   const [language, setLanguage] = useState("html");
   const [stdin, setStdin] = useState("");
@@ -269,8 +276,10 @@ export default function CodePlayground() {
   const [copied, setCopied] = useState(false);
 
   const iframeRef = useRef(null);
+  const lineNumbersRef = useRef(null);
 
   const activeCode = codes[language];
+  const activeCodeLines = useMemo(() => activeCode.split("\n"), [activeCode]);
   const isWebLanguage = ["html", "css", "js"].includes(language);
 
   const addOutput = (type, message) => {
@@ -357,112 +366,133 @@ export default function CodePlayground() {
     setHasRun(true);
   };
 
-  const runCompiledLanguage = async () => {
-    const apiBase = import.meta.env.VITE_JUDGE0_API_URL;
 
-    if (!apiBase) {
-      throw new Error(
-        "Judge0 API is not configured. Set VITE_JUDGE0_API_URL in your frontend environment."
-      );
+const runCompiledLanguage = async () => {
+  const apiBase = import.meta.env.VITE_JUDGE0_API_URL;
+
+  if (!apiBase) {
+    throw new Error(
+      "Judge0 API is not configured. Check your .env file."
+    );
+  }
+
+  const baseURL = apiBase.replace(/\/+$/, "");
+  const languageId = judge0LanguageIds[language];
+
+  if (!languageId) {
+    throw new Error("Unsupported Judge0 language.");
+  }
+
+  addOutput("system", "Submitting code to Judge0...");
+
+  // Submit source code
+  const submitResponse = await fetch(
+    `${baseURL}/submissions?base64_encoded=false&wait=false`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        source_code: codes[language],
+        language_id: languageId,
+        stdin: stdin,
+      }),
     }
+  );
 
-    const baseURL = apiBase.replace(/\/+$/, "");
+  if (!submitResponse.ok) {
+    const details = await submitResponse.text();
 
-    addOutput("system", "Submitting code to the compiler...");
+    throw new Error(
+      `Submission failed (${submitResponse.status}): ${details}`
+    );
+  }
 
-    const submitResponse = await fetch(
-      `${baseURL}/submissions?base64_encoded=false&wait=false`,
+  const submission = await submitResponse.json();
+
+  if (!submission.token) {
+    throw new Error("Judge0 did not return a submission token.");
+  }
+
+  addOutput("system", "Code submitted. Waiting for execution...");
+
+  let result = null;
+  const maxAttempts = 40;
+
+  // Poll Judge0 for execution result
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const resultResponse = await fetch(
+      `${baseURL}/submissions/${submission.token}?base64_encoded=false`,
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source_code: codes[language],
-          language_id: judge0LanguageIds[language],
-          stdin,
-        }),
+        method: "GET",
       }
     );
 
-    if (!submitResponse.ok) {
-      const details = await submitResponse.text();
+    if (!resultResponse.ok) {
       throw new Error(
-        `Compiler submission failed (${submitResponse.status}): ${details}`
+        `Unable to retrieve result (${resultResponse.status}).`
       );
     }
 
-    const submission = await submitResponse.json();
+    result = await resultResponse.json();
 
-    if (!submission.token) {
-      throw new Error("The compiler did not return a submission token.");
+    // 1 = In Queue, 2 = Processing
+    if (result.status?.id > 2) {
+      break;
     }
+  }
 
-    addOutput("system", "Compilation submitted. Waiting for results...");
-
-    let result = null;
-
-    // Poll Judge0 until execution is complete.
-    for (let attempt = 0; attempt < 30; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const resultResponse = await fetch(
-        `${baseURL}/submissions/${submission.token}?base64_encoded=false`,
-        {
-          method: "GET",
-        }
-      );
-
-      if (!resultResponse.ok) {
-        throw new Error(
-          `Unable to retrieve execution result (${resultResponse.status}).`
-        );
-      }
-
-      result = await resultResponse.json();
-
-      // Status 1 = In Queue, 2 = Processing.
-      if (result.status?.id > 2) {
-        break;
-      }
-    }
-
-    if (!result || result.status?.id <= 2) {
-      throw new Error("Execution timed out while waiting for the compiler.");
-    }
-
-    if (result.stdout) {
-      addOutput("output", result.stdout);
-    }
-
-    if (result.compile_output) {
-      addOutput("error", result.compile_output);
-    }
-
-    if (result.stderr) {
-      addOutput("error", result.stderr);
-    }
-
-    if (result.message) {
-      addOutput("error", result.message);
-    }
-
-    addOutput(
-      result.status?.id === 3 ? "success" : "system",
-      `Execution status: ${result.status?.description || "Finished"}`
+  if (!result || result.status?.id <= 2) {
+    throw new Error(
+      "Execution timed out while waiting for Judge0."
     );
+  }
 
-    if (
-      !result.stdout &&
-      !result.compile_output &&
-      !result.stderr &&
-      !result.message
-    ) {
-      addOutput("system", "The program did not produce any output.");
-    }
+  // Display program output
+  if (result.stdout) {
+    addOutput("output", result.stdout);
+  }
 
-    setHasRun(true);
-  };
+  // Display compilation errors
+  if (result.compile_output) {
+    addOutput("error", result.compile_output);
+  }
+
+  // Display runtime errors
+  if (result.stderr) {
+    addOutput("error", result.stderr);
+  }
+
+  // Display additional messages
+  if (result.message) {
+    addOutput("error", result.message);
+  }
+
+  // Display execution status
+  if (result.status?.id === 3) {
+    addOutput("success", "Program executed successfully.");
+  } else {
+    addOutput(
+      "error",
+      `Execution status: ${result.status?.description || "Unknown"}`
+    );
+  }
+
+  if (
+    !result.stdout &&
+    !result.compile_output &&
+    !result.stderr &&
+    !result.message
+  ) {
+    addOutput("system", "The program did not produce any output.");
+  }
+
+  setHasRun(true);
+};
+
 
   const runCode = async () => {
     setOutput([]);
@@ -542,6 +572,17 @@ export default function CodePlayground() {
         </div>
 
         <div className="playground-actions">
+          <button
+            type="button"
+            className="playground-secondary-button"
+            onClick={() => navigate("/code-explanation", {
+              state: { code: activeCode, language },
+            })}
+          >
+            <Lightbulb size={16} />
+            Explain code
+          </button>
+
           <button
             type="button"
             className="playground-secondary-button"
@@ -647,16 +688,25 @@ export default function CodePlayground() {
           )}
 
           <div className="playground-editor">
-            <div className="playground-line-numbers">
-              {activeCode.split("\n").map((_, index) => (
+            <div
+              ref={lineNumbersRef}
+              className="playground-line-numbers"
+            >
+              {activeCodeLines.map((_, index) => (
                 <span key={index}>{index + 1}</span>
               ))}
             </div>
 
             <textarea
+              maxLength={MAX_CODE_LENGTH}
               spellCheck={false}
               value={activeCode}
               onChange={(event) => updateCode(event.target.value)}
+              onScroll={(event) => {
+                if (lineNumbersRef.current) {
+                  lineNumbersRef.current.scrollTop = event.currentTarget.scrollTop;
+                }
+              }}
               aria-label={`${language} code editor`}
               placeholder={`Write your ${language.toUpperCase()} code here...`}
               disabled={isRunning}
@@ -664,8 +714,10 @@ export default function CodePlayground() {
           </div>
 
           <div className="playground-editor-footer">
-            <span>{activeCode.split("\n").length} lines</span>
-            <span>{activeCode.length} characters</span>
+            <span>{activeCodeLines.length} lines</span>
+            <span>
+              {activeCode.length.toLocaleString()} / {MAX_CODE_LENGTH.toLocaleString()} characters
+            </span>
           </div>
 
           {/* Standard input */}
@@ -812,3 +864,4 @@ export default function CodePlayground() {
     </div>
   );
 }
+console.log("Judge0 URL:", import.meta.env.VITE_JUDGE0_API_URL);

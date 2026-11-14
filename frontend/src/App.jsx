@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ErrorToDocs from "./pages/ErrorToDocs";
 import CodePlayground from "./pages/CodePlayground";
+import CodeExplanation from "./pages/CodeExplanation";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import CommandPalette from "./components/CommandPalette";
@@ -90,6 +91,7 @@ function Layout() {
             <Route path="/workspace" element={<Workspace />} />
             <Route path="/error-to-docs" element={<ErrorToDocs />} />
             <Route path="/playground" element={<CodePlayground />} />
+            <Route path="/code-explanation" element={<CodeExplanation />} />
           </Routes>
         </main>
       </div>

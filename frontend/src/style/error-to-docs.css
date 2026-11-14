@@ -299,6 +299,10 @@
   font-family: "Fira Code", Consolas, monospace;
 }
 
+.error-code-block pre code {
+  color: #f4f0e8;
+}
+
 .error-docs-block {
   padding-top: 21px;
   border-top: 1px solid #e9e3d9;
@@ -365,5 +369,11 @@
 
   .error-examples {
     align-items: flex-start;
+  }
+
+  .error-code-block pre {
+    max-width: 100%;
+    padding: 14px;
+    font-size: 12px;
   }
 }

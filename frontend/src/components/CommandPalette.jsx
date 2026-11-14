@@ -94,6 +94,15 @@ const commands = [
     keywords: "code editor html css javascript playground",
     icon: Code2,
   },
+  {
+    id: "code-explanation",
+    label: "Explain Code",
+    description: "Understand code line by line in a local demo",
+    category: "Learning",
+    path: "/code-explanation",
+    keywords: "code explanation explain line by line concepts",
+    icon: Lightbulb,
+  },
 ];
 
 export default function CommandPalette() {

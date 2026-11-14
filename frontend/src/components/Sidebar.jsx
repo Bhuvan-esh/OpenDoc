@@ -9,6 +9,7 @@ import {
   FolderOpen,
   ExternalLink,
   Bug,
+  Lightbulb,
 } from "lucide-react";
 
 const navigation = [
@@ -47,6 +48,11 @@ const navigation = [
   path: "/playground",
   icon: Code2,
   },
+  {
+    label: "Code Explanation",
+    path: "/code-explanation",
+    icon: Lightbulb,
+  },
 ];
 
 export default function Sidebar({ onNavigate }) {
@@ -55,7 +61,7 @@ export default function Sidebar({ onNavigate }) {
 
       <div className="sidebar-brand">
         <div className="brand-icon">
-          <BookOpen size={23} />
+          <BookOpen size={29} />
         </div>
 
         <span>
