@@ -1,6 +1,19 @@
 version: "3.9"
 
 services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: opendocs-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - opendocs-net
+
   backend:
     build:
       context: ./backend
