@@ -1,0 +1,265 @@
+
+.command-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 14vh 20px 30px;
+  background: rgba(18, 29, 45, 0.48);
+  backdrop-filter: blur(5px);
+  animation: commandFadeIn 0.16s ease;
+}
+
+.command-palette {
+  width: 100%;
+  max-width: 640px;
+  max-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fbf9f5;
+  border: 1px solid #e6dfd3;
+  border-radius: 17px;
+  box-shadow: 0 24px 80px rgba(20, 35, 55, 0.25);
+  animation: commandSlideIn 0.2s ease;
+}
+
+.command-search {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0 20px;
+  color: #657386;
+  border-bottom: 1px solid #e9e3da;
+}
+
+.command-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #182b49;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.command-search input::placeholder {
+  color: #929aa5;
+}
+
+.command-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #657386;
+  cursor: pointer;
+}
+
+.command-close:hover {
+  background: #eee9e1;
+  color: #182b49;
+}
+
+.command-results {
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.command-section + .command-section {
+  margin-top: 12px;
+}
+
+.command-section-title {
+  margin: 8px 10px;
+  color: #89919c;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 1.2px;
+}
+
+.command-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  color: #182b49;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.command-item:hover,
+.command-item.selected {
+  background: #f0ece4;
+  border-color: #e7dfd3;
+}
+
+.command-item.selected .command-icon {
+  background: #f5e5df;
+  color: #c8553d;
+}
+
+.command-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #f0eee8;
+  color: #52637a;
+}
+
+.command-item-content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.command-item-content strong {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.command-item-content small {
+  overflow: hidden;
+  color: #788393;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.command-category {
+  flex-shrink: 0;
+  color: #929aa5;
+  font-size: 10px;
+}
+
+.command-empty {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #8290a0;
+}
+
+.command-empty strong {
+  color: #182b49;
+  font-size: 14px;
+}
+
+.command-empty span {
+  font-size: 12px;
+}
+
+.command-footer {
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 17px;
+  border-top: 1px solid #e9e3da;
+  background: #f7f4ee;
+}
+
+.command-footer > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.command-footer small {
+  color: #788393;
+  font-size: 10px;
+}
+
+.command-key {
+  min-width: 22px;
+  height: 21px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 0 5px;
+  border: 1px solid #ddd6cb;
+  border-radius: 5px;
+  background: #fbf9f5;
+  color: #52637a;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.command-brand {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #657386;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+@keyframes commandFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes commandSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 600px) {
+  .command-overlay {
+    padding: 10vh 12px 20px;
+  }
+
+  .command-palette {
+    max-height: 78vh;
+    border-radius: 13px;
+  }
+
+  .command-search {
+    min-height: 60px;
+    padding: 0 14px;
+  }
+
+  .command-category {
+    display: none;
+  }
+
+  .command-footer {
+    gap: 10px;
+    padding: 0 10px;
+  }
+
+  .command-brand {
+    display: none;
+  }
+}
