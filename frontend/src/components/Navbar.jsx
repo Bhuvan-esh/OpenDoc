@@ -45,14 +45,6 @@ export default function Navbar({ onMenuClick, mobileMenu }) {
         <button
           type="button"
           className="icon-button"
-          aria-label="Search"
-        >
-          <Search size={19} />
-        </button>
-
-        <button
-          type="button"
-          className="icon-button"
           aria-label="Notifications"
         >
           <Bell size={19} />
