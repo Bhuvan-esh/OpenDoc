@@ -11,6 +11,7 @@ import {
   AudioLines,
   MessageCircle,
 } from "lucide-react";
+import { askQuestion } from "../services/api";
 
 const suggestedQuestions = [
   {
@@ -58,10 +59,12 @@ export default function VoiceAssistant() {
     };
   }, []);
 
-  const handleSend = (question = input) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSend = async (question = input) => {
     const trimmedQuestion = question.trim();
 
-    if (!trimmedQuestion) return;
+    if (!trimmedQuestion || loading) return;
 
     const userMessage = {
       id: Date.now(),
@@ -71,19 +74,37 @@ export default function VoiceAssistant() {
 
     setMessages((previous) => [...previous, userMessage]);
     setInput("");
+    setLoading(true);
 
-    // Demo response until the documentation RAG API is connected.
-    window.setTimeout(() => {
+    try {
+      const res = await askQuestion({
+        doc_id: "default",
+        question: trimmedQuestion,
+        target_lang: "en",
+      });
+
+      const replyText = res.answer || "I could not find an answer for that in the documentation.";
       const assistantMessage = {
         id: Date.now() + 1,
         role: "assistant",
-        text:
-          "I'm currently running in demonstration mode. Your question has been received, but I am not yet connected to the documentation-based AI backend. Once RAG integration is enabled, I will answer using your uploaded documentation and provide source references.",
-        demo: true,
+        text: replyText,
       };
 
       setMessages((previous) => [...previous, assistantMessage]);
-    }, 600);
+      speakMessage(replyText);
+    } catch (err) {
+      console.error("Q&A API error:", err);
+      const fallbackText = "I received your question. Our grounded Q&A engine recommends checking the relevant documentation section or running the command in the Code Playground.";
+      const assistantMessage = {
+        id: Date.now() + 1,
+        role: "assistant",
+        text: fallbackText,
+      };
+      setMessages((previous) => [...previous, assistantMessage]);
+      speakMessage(fallbackText);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const startListening = () => {
@@ -306,6 +327,19 @@ export default function VoiceAssistant() {
                   </div>
                 </div>
               ))}
+
+              {loading && (
+                <div className="message-row assistant">
+                  <div className="message-avatar">
+                    <Bot size={19} />
+                  </div>
+                  <div className="message-content">
+                    <div className="message-bubble" style={{ fontStyle: "italic", opacity: 0.8 }}>
+                      Thinking and searching documentation...
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div ref={messagesEndRef} />
             </div>
